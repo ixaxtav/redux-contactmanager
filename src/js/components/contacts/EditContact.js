@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import TextInputGroup from '../layout/TextInputGroup';
 import PropTypes from 'prop-types';
+import {connect} from 'react-redux';
+import {getContact, updateContact} from '../../../actions/contactActions.js';
 
 class EditContact extends Component {
   
@@ -14,7 +16,21 @@ class EditContact extends Component {
   };
     
   }
-
+  
+  UNSAFE_componentWillReceiveProps(nextProps, nextState){
+    const {name, email, phone} = nextProps.contact;
+    this.setState({
+      name,
+      email,
+      phone
+    });
+  }
+  
+  componentDidMount(){
+    const {id} = this.props.match.params;
+    this.props.getContact(id);
+  }
+  
   onSubmit(e){
     e.preventDefault();
 
@@ -36,15 +52,17 @@ class EditContact extends Component {
       return;
     }
 
+
+    const { id } = this.props.match.params;
+
     const updContact = {
+      id,
       name,
       email,
       phone
     };
-
-    const { id } = this.props.match.params;
-
-    //// UPDATE CONTACT ////
+    
+    this.props.updateContact(updContact);
 
     // Clear State
     this.setState({
@@ -66,13 +84,13 @@ class EditContact extends Component {
         <div className="card mb-3">
             <div className="card-header">Edit Contact</div>
             <div className="card-body">
-                <form onSubmit={this.onSubmit}>
+                <form onSubmit={(e) => this.onSubmit(e)}>
                     <TextInputGroup
               label="Name"
               name="name"
               placeholder="Enter Name"
               value={name}
-              onChange={this.onChange}
+              onChange={(e) => this.onChange(e)}
               error={errors.name}
             />
                     <TextInputGroup
@@ -81,7 +99,7 @@ class EditContact extends Component {
               type="email"
               placeholder="Enter Email"
               value={email}
-              onChange={this.onChange}
+              onChange={(e) => this.onChange(e)}
               error={errors.email}
             />
                     <TextInputGroup
@@ -89,7 +107,7 @@ class EditContact extends Component {
               name="phone"
               placeholder="Enter Phone"
               value={phone}
-              onChange={this.onChange}
+              onChange={(e) => this.onChange(e)}
               error={errors.phone}
             />
                     <input
@@ -111,8 +129,15 @@ EditContact.propTypes = {
       name: PropTypes.string,
       email: PropTypes.string,
       phone: PropTypes.string
-    })
-})
+      })
+    }),
+contact: PropTypes.object,
+getContact: PropTypes.func,
+updateContact: PropTypes.func
 };
 
-export default EditContact;
+const mapStateToProps = state => ({
+  contact: state.contact.contact
+});
+
+export default connect(mapStateToProps, {getContact , updateContact})(EditContact);
